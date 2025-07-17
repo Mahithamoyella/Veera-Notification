@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: veera_notification_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: notifications
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin834
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5497:5432"
+
+  backend:
+    build: ./Backend
+    container_name: veera_notification_backend
+    ports:
+      - "3097:3097"
+    depends_on:
+      - postgres
+    environment:
+      DB_USER: postgres
+      DB_HOST: postgres
+      DB_NAME: notifications
+      DB_PASSWORD: admin834
+      DB_PORT: 5432
+
+  frontend:
+    build: ./Frontend
+    container_name: veera_notification_frontend
+    ports:
+      - "8154:80"
+    depends_on:
+      - backend
+
+  hr:
+    build: ./HR
+    container_name: veera_notification_hr
+    ports:
+      - "8155:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:
+
